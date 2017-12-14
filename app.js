@@ -129,7 +129,10 @@ function Timer()
     this.mmHtml.innerText = makeTimeString(this.mm);
     this.ss = 0;
     this.ssHtml.innerText = makeTimeString(this.ss);
-    this.pause();
+    if (this.isEnabled)
+    {
+      this.pause();
+    }
   };
 }
 
