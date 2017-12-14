@@ -1,35 +1,6 @@
 'use strict';
 
-function LocalStorage()
-{
-  this.localStorage = window.localStorage;
-
-  this.set = function (name, value)
-  {
-    this.localStorage.setItem(name, value);
-  }
-  this.get = function (name)
-  {
-    return this.localStorage.getItem(name);
-  }
-  this.getAll = function ()
-  {
-    var values = [],
-      keys = Object.keys(this.localStorage),
-      i = keys.length;
-
-    while (i--) 
-    {
-      values.push(this.localStorage.getItem(keys[i]));
-    }
-
-    return values;
-  }
-  this.remove = function (name)
-  {
-    this.localStorage.removeItem(name);
-  }
-}
+var localStorage = window.localStorage;
 
 /**If the browser supports service workers, register it.*/
 function initialiseServiceWorker()
@@ -136,14 +107,13 @@ function Timer()
   };
 }
 
-let storage = new LocalStorage();
 let timer = new Timer();
 
 function setAllStorage()
 {
-  storage.set("hh", timer.hhHtml.innerText);
-  storage.set("mm", timer.mmHtml.innerText);
-  storage.set("ss", timer.ssHtml.innerText);
+  localStorage.setItem("hh", timer.hhHtml.innerText);
+  localStorage.setItem("mm", timer.mmHtml.innerText);
+  localStorage.setItem("ss", timer.ssHtml.innerText);
 }
 
 //Called when app.js is first loaded.
@@ -152,7 +122,7 @@ function init()
   timer.start();
 
   //If no local storage exists for the timer.
-  if (storage.get("ss") === null || storage.get("ss") === undefined)
+  if (localStorage.getItem("ss") === null || localStorage.getItem("ss") === undefined)
   {
     /**Store the timer values to localStorage once initially so retrieval
     * doesn't ever return null or undefined in the case of a timer not
@@ -161,11 +131,11 @@ function init()
   }
   else
   {
-    timer.hhHtml.innerText = storage.get("hh");
+    timer.hhHtml.innerText = localStorage.getItem("hh");
     timer.hh = parseInt(timer.hhHtml.innerText);
-    timer.mmHtml.innerText = storage.get("mm");
+    timer.mmHtml.innerText = localStorage.getItem("mm");
     timer.mm = parseInt(timer.mmHtml.innerText);
-    timer.ssHtml.innerText = storage.get("ss");
+    timer.ssHtml.innerText = localStorage.getItem("ss");
     timer.ss = parseInt(timer.ssHtml.innerText);
   }
 
