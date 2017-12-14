@@ -2,8 +2,8 @@
     "name": "Timer",
     "short_name": "Timer",
     "icons": [{
-        "src": "/icon-48x48.png",
-        "sizes": "48x48",
+        "src": "/icon-144x144.png",
+        "sizes": "144x144",
         "type": "image/png"
     }],
     "start_url": "/index.html",
