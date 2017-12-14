@@ -44,39 +44,35 @@ function Timer()
 
   this.start = function ()
   {
-    this.isEnabled = true;
     let count = 0;
 
-    if (!this.hasStarted)
+    setInterval(function ()
     {
-      setInterval(function ()
+      if (this.isEnabled)
       {
-        if (this.isEnabled)
+        count += 1;
+
+        this.ss += 1;
+        if (this.ss >= 60)
         {
-          count += 1;
-
-          this.ss += 1;
-          if (this.ss >= 60)
+          this.ss = 0;
+          this.mm += 1;
+          if (this.mm >= 60)
           {
-            this.ss = 0;
-            this.mm += 1;
-            if (this.mm >= 60)
-            {
-              this.hh += 1;
-              this.mm = 0;
+            this.hh += 1;
+            this.mm = 0;
 
-              this.updateTimer('hh'); //If an hour is added, update hh string.
-            }
-
-            this.updateTimer('mm'); //If a minute is added, update mm string.
+            this.updateTimer('hh'); //If an hour is added, update hh string.
           }
 
-          this.updateTimer('ss'); //If a second is added, update ss string.
-
+          this.updateTimer('mm'); //If a minute is added, update mm string.
         }
 
-      }.bind(this), 1000);
-    }
+        this.updateTimer('ss'); //If a second is added, update ss string.
+
+      }
+
+    }.bind(this), 1000);
   };
 
   this.changeState = function (state)
@@ -104,6 +100,36 @@ function Timer()
     {
       setAllStorage();
     }
+  };
+
+  this.pause = function ()
+  {
+    //If the state being changed into is false
+    if (!timer.isEnabled === false)
+    {
+      //make button a play sign.
+      $("#changeStateBtn").html("<i class='material-icons'>play_arrow</i>");
+    }
+    else
+    {
+      //Make button a pause sign.
+      $("#changeStateBtn").html("<i class='material-icons'>pause</i>");
+    }
+
+    timer.changeState(!timer.isEnabled);
+    setAllStorage();
+  };
+
+  this.reset = function ()
+  {
+    //Reset the timer.
+    this.hh = 0;
+    this.hhHtml.innerText = makeTimeString(this.hh);
+    this.mm = 0;
+    this.mmHtml.innerText = makeTimeString(this.mm);
+    this.ss = 0;
+    this.ssHtml.innerText = makeTimeString(this.ss);
+    this.pause();
   };
 }
 
@@ -144,3 +170,14 @@ function init()
 }
 
 init();
+
+//EVENTS
+$("#changeStateBtn").click(function ()
+{
+  timer.pause();
+});
+
+$("#resetBtn").click(function ()
+{
+  timer.reset();
+});

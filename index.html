@@ -6,23 +6,29 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PWA Timer</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css" media="screen,projection" />
   <link rel="stylesheet" type="text/css" href="main.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 
-<body>
-
-  <header class="header">
-    <h1 id="headerTitle"> PWA Timer</h1>
-  </header>
-
-  <main class="main">
+<body style="background: #303f9f; color: #FFFFFF;">
+  <main class="main" style="text-align: center;">
     <h3 class="timer">
       <span id="hh">00</span> :
       <span id="mm">00</span> :
       <span id="ss">00</span>
     </h3>
+
+    <div class="controls">
+      <a id="changeStateBtn" class="btn-floating btn-large waves-effect waves-light pink accent-2"><i class="material-icons">play_arrow</i></a>
+      <a id="resetBtn" class="btn-floating btn-large waves-effect waves-light pink accent-2"><i class="material-icons">replay</i></a>
+    </div>
   </main>
 
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
   <script src="app.js" async></script>
 </body>
 
