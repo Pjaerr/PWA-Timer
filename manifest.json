@@ -1,0 +1,13 @@
+{
+    "name": "Timer",
+    "short_name": "Timer",
+    "icons": [{
+        "src": "/icon-48x48.png",
+        "sizes": "48x48",
+        "type": "image/png"
+    }],
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#303f9f",
+    "theme_color": "#FFFFFF"
+}
