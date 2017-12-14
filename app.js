@@ -1,6 +1,6 @@
 'use strict';
 
-var localStorage = window.localStorage;
+var storage = window.localStorage;
 
 /**If the browser supports service workers, register it.*/
 function initialiseServiceWorker()
@@ -111,9 +111,9 @@ let timer = new Timer();
 
 function setAllStorage()
 {
-  localStorage.setItem("hh", timer.hhHtml.innerText);
-  localStorage.setItem("mm", timer.mmHtml.innerText);
-  localStorage.setItem("ss", timer.ssHtml.innerText);
+  storage.setItem("hh", timer.hhHtml.innerText);
+  storage.setItem("mm", timer.mmHtml.innerText);
+  storage.setItem("ss", timer.ssHtml.innerText);
 }
 
 //Called when app.js is first loaded.
@@ -122,7 +122,7 @@ function init()
   timer.start();
 
   //If no local storage exists for the timer.
-  if (localStorage.getItem("ss") === null || localStorage.getItem("ss") === undefined)
+  if (storage.getItem("ss") === null || storage.getItem("ss") === undefined)
   {
     /**Store the timer values to localStorage once initially so retrieval
     * doesn't ever return null or undefined in the case of a timer not
@@ -131,11 +131,11 @@ function init()
   }
   else
   {
-    timer.hhHtml.innerText = localStorage.getItem("hh");
+    timer.hhHtml.innerText = storage.getItem("hh");
     timer.hh = parseInt(timer.hhHtml.innerText);
-    timer.mmHtml.innerText = localStorage.getItem("mm");
+    timer.mmHtml.innerText = storage.getItem("mm");
     timer.mm = parseInt(timer.mmHtml.innerText);
-    timer.ssHtml.innerText = localStorage.getItem("ss");
+    timer.ssHtml.innerText = storage.getItem("ss");
     timer.ss = parseInt(timer.ssHtml.innerText);
   }
 
