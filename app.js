@@ -133,6 +133,8 @@ function Timer()
     {
       this.pause();
     }
+
+    timer.setAllStorage();
   };
 }
 
