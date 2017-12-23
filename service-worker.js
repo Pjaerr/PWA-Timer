@@ -2,10 +2,10 @@ var cacheName = 'timerPWA-0'; //The name of the cache, named so that different c
 
 /**All of the files that will be cached and loaded from cache when possible.*/
 var filesToCache = [
-    '/',
-    '/index.html',
-    '/app.js',
-    '/materialize'
+    '/PWA-Timer/',
+    '/PWA-Timer/index.html',
+    '/PWA-Timer/app.js',
+    '/PWA-Timer/materialize'
 ];
 
 /**Service Worker Install event.*/
