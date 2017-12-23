@@ -5,8 +5,7 @@ var filesToCache = [
     '/',
     '/index.html',
     '/app.js',
-    '/materialize',
-    '/manifest.json'
+    '/materialize'
 ];
 
 /**Service Worker Install event.*/
