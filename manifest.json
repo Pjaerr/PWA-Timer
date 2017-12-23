@@ -9,5 +9,5 @@
     "start_url": "/PWA-Timer/index.html",
     "display": "standalone",
     "background_color": "#303f9f",
-    "theme_color": "#FFFFFF"
+    "theme_color": "#303f9f"
 }
