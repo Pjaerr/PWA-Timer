@@ -2,11 +2,11 @@
     "name": "Timer",
     "short_name": "Timer",
     "icons": [{
-        "src": "/PWA-Timer/icon-144x144.png",
+        "src": "icon-144x144.png",
         "sizes": "144x144",
         "type": "image/png"
     }],
-    "start_url": "/PWA-Timer/index.html",
+    "start_url": "/index.html",
     "display": "standalone",
     "background_color": "#303f9f",
     "theme_color": "#303f9f"

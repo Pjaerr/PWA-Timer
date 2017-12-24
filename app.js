@@ -1,5 +1,7 @@
 'use strict';
 
+let sound = new Audio("alarm.mp3");
+
 var storage = window.localStorage;
 
 /**If the browser supports service workers, register it.*/
@@ -80,7 +82,8 @@ function Timer()
 let timer = new Timer();
 
 
-
+let hh = 0;
+let mm = 0;
 function updateTimer(data)
 {
   switch (data.type)
@@ -94,12 +97,21 @@ function updateTimer(data)
       }
       break;
     case 'mm':
-
       timer.mmHtml.innerText = makeTimeString(data.value);
+      mm++;
       break;
     case 'hh':
       timer.hhHtml.innerText = makeTimeString(data.value);
+      hh++;
       break;
+  }
+
+  if (hh === 0 && mm === 1)
+  {
+    console.log("test");
+    sound.play();
+    mm = 0;
+    hh = 0;
   }
 }
 

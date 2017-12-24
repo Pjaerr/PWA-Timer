@@ -1,4 +1,3 @@
-
 let ss = 0;
 let mm = 0;
 let hh = 0;
@@ -24,6 +23,7 @@ function timer()
         {
             ss = 0;
             mm += 1;
+
             if (mm >= 60)
             {
                 hh += 1;
