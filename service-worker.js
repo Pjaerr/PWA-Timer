@@ -5,6 +5,7 @@ var filesToCache = [
     '/',
     '/index.html',
     '/app.js',
+    '/background_process.js',
     '/materialize',
     '/manifest.json'
 ];

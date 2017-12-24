@@ -83,7 +83,6 @@ let timer = new Timer();
 
 function updateTimer(data)
 {
-  console.log(data.type + " || " + data.value);
   switch (data.type)
   {
     case 'ss':
@@ -159,6 +158,12 @@ function init()
 
 
   initialiseServiceWorker();
+
+  window.addEventListener("beforeunload", function (e)
+  {
+    setAllStorage();
+    return null;
+  });
 }
 
 init();
