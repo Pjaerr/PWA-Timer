@@ -26,13 +26,6 @@ function makeTimeString(num)
 
 function Timer()
 {
-  /**The hours section of the timer as an integer.*/
-  this.hh = 0;
-  /**The minutes section of the timer as an integer.*/
-  this.mm = 0;
-  /**The seconds section of the timer as an integer.*/
-  this.ss = 0;
-
   /**The hours section of the timer in HTML.*/
   this.hhHtml = document.getElementById('hh');
   /**The minutes section of the timer in HTML.*/
@@ -42,70 +35,17 @@ function Timer()
 
   this.isEnabled = false;
 
-  this.start = function ()
-  {
-    let count = 0;
-
-    setInterval(function ()
-    {
-      if (this.isEnabled)
-      {
-        count += 1;
-
-        this.ss += 1;
-        if (this.ss >= 60)
-        {
-          this.ss = 0;
-          this.mm += 1;
-          if (this.mm >= 60)
-          {
-            this.hh += 1;
-            this.mm = 0;
-
-            this.updateTimer('hh'); //If an hour is added, update hh string.
-          }
-
-          this.updateTimer('mm'); //If a minute is added, update mm string.
-        }
-
-        this.updateTimer('ss'); //If a second is added, update ss string.
-
-      }
-
-    }.bind(this), 1000);
-  };
 
   this.changeState = function (state)
   {
     this.isEnabled = state;
-  };
-
-  this.updateTimer = function (section)
-  {
-    switch (section)
-    {
-      case 'ss':
-        this.ssHtml.innerText = makeTimeString(this.ss);
-        break;
-      case 'mm':
-        this.mmHtml.innerText = makeTimeString(this.mm);
-        break;
-      case 'hh':
-        this.hhHtml.innerText = makeTimeString(this.hh);
-        break;
-    }
-
-    //Push the updated timer to localStorage every 10 seconds.
-    if (this.ss % 10 === 0)
-    {
-      setAllStorage();
-    }
+    web_worker.postMessage(["state_change", this.isEnabled]);
   };
 
   this.pause = function ()
   {
     //If the state being changed into is false
-    if (!timer.isEnabled === false)
+    if (!this.isEnabled === false)
     {
       //make button a play sign.
       $("#changeStateBtn").html("<i class='material-icons'>play_arrow</i>");
@@ -116,19 +56,18 @@ function Timer()
       $("#changeStateBtn").html("<i class='material-icons'>pause</i>");
     }
 
-    timer.changeState(!timer.isEnabled);
+    this.changeState(!this.isEnabled);
     setAllStorage();
   };
 
   this.reset = function ()
   {
     //Reset the timer.
-    this.hh = 0;
-    this.hhHtml.innerText = makeTimeString(this.hh);
-    this.mm = 0;
-    this.mmHtml.innerText = makeTimeString(this.mm);
-    this.ss = 0;
-    this.ssHtml.innerText = makeTimeString(this.ss);
+    web_worker.postMessage(["reset"]);
+    this.hhHtml.innerText = makeTimeString(0);
+    this.mmHtml.innerText = makeTimeString(0);
+    this.ssHtml.innerText = makeTimeString(0);
+
     if (this.isEnabled)
     {
       this.pause();
@@ -140,6 +79,54 @@ function Timer()
 
 let timer = new Timer();
 
+
+
+function updateTimer(data)
+{
+  console.log(data.type + " || " + data.value);
+  switch (data.type)
+  {
+    case 'ss':
+      timer.ssHtml.innerText = makeTimeString(data.value);
+
+      if (data.value % 10 === 0)
+      {
+        setAllStorage();
+      }
+      break;
+    case 'mm':
+
+      timer.mmHtml.innerText = makeTimeString(data.value);
+      break;
+    case 'hh':
+      timer.hhHtml.innerText = makeTimeString(data.value);
+      break;
+  }
+}
+
+
+
+let web_worker;
+function startBackgroundProcess()
+{
+  if (typeof (Worker) !== "undefined")
+  {
+    if (typeof (web_worker) == "undefined")
+    {
+      web_worker = new Worker("background_process.js");
+    }
+    web_worker.onmessage = function (event)
+    {
+      updateTimer(event.data);
+    };
+  }
+  else
+  {
+    alert("Browser not supported..");
+  }
+}
+
+
 function setAllStorage()
 {
   storage.setItem("hh", timer.hhHtml.innerText);
@@ -150,7 +137,7 @@ function setAllStorage()
 //Called when app.js is first loaded.
 function init()
 {
-  timer.start();
+  startBackgroundProcess();
 
   //If no local storage exists for the timer.
   if (storage.getItem("ss") === null || storage.getItem("ss") === undefined)
@@ -163,11 +150,11 @@ function init()
   else
   {
     timer.hhHtml.innerText = storage.getItem("hh");
-    timer.hh = parseInt(timer.hhHtml.innerText);
     timer.mmHtml.innerText = storage.getItem("mm");
-    timer.mm = parseInt(timer.mmHtml.innerText);
     timer.ssHtml.innerText = storage.getItem("ss");
-    timer.ss = parseInt(timer.ssHtml.innerText);
+
+    web_worker.postMessage(["update_from_storage", parseInt(timer.hhHtml.innerText),
+      parseInt(timer.mmHtml.innerText), parseInt(timer.ssHtml.innerText)]);
   }
 
 
