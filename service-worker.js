@@ -4,6 +4,7 @@ var cacheName = 'timerPWA-0'; //The name of the cache, named so that different c
 var filesToCache = [
     '/',
     '/index.html',
+    '/PWA-Timer/index.html',
     '/app.js',
     '/background_process.js',
     '/materialize',
