@@ -6,7 +6,7 @@
         "sizes": "144x144",
         "type": "image/png"
     }],
-    "start_url": "/index.html",
+    "start_url": "/PWA-Timer/index.html",
     "display": "standalone",
     "background_color": "#303f9f",
     "theme_color": "#303f9f"
