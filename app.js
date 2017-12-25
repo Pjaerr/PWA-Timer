@@ -1,7 +1,5 @@
 'use strict';
 
-let sound = new Audio("alarm.mp3");
-
 var storage = window.localStorage;
 
 /**If the browser supports service workers, register it.*/
@@ -82,8 +80,49 @@ function Timer()
 let timer = new Timer();
 
 
-let hh = 0;
-let mm = 0;
+function Reminder()
+{
+  this.sound = new Audio("alarm.mp3");
+
+  this.hoursPassed = 0;
+  this.minutesPassed = 0;
+
+  this.reminderInterval = [];
+
+  this.setReminderInterval = function (hours, minutes, fromStorage)
+  {
+    fromStorage = fromStorage || false;
+
+    this.reminderInterval[0] = hours;
+    this.reminderInterval[1] = minutes;
+
+    if (!fromStorage)
+    {
+      storage.setItem("interval", this.reminderInterval[0].toString() + "," + this.reminderInterval[1].toString());
+    }
+  }
+
+  if (storage.getItem("interval") === null || storage.getItem("interval") === undefined)
+  {
+    this.reminderInterval = [2, 0];
+  }
+  else
+  {
+    let locallyStoredInterval = storage.getItem("interval").split(',');
+
+    this.setReminderInterval(parseInt(locallyStoredInterval[0]), parseInt(locallyStoredInterval[1]), true);
+  }
+}
+
+let reminderData = new Reminder();
+
+$("#applyBtn").click(function ()
+{
+  reminderData.setReminderInterval($("#hoursSelect").val(), $("#minutesSelect").val());
+  $('#timer-container').css('display', 'block');
+  $('#settings-container').css('display', 'none');
+});
+
 function updateTimer(data)
 {
   switch (data.type)
@@ -98,20 +137,20 @@ function updateTimer(data)
       break;
     case 'mm':
       timer.mmHtml.innerText = makeTimeString(data.value);
-      mm++;
+      reminderData.minutesPassed++;
       break;
     case 'hh':
       timer.hhHtml.innerText = makeTimeString(data.value);
-      hh++;
+      reminderData.hoursPassed++;
       break;
   }
 
-  if (hh === 0 && mm === 1)
+  if (reminderData.hoursPassed == reminderData.reminderInterval[0]
+    && reminderData.minutesPassed == reminderData.reminderInterval[1])
   {
-    console.log("test");
-    sound.play();
-    mm = 0;
-    hh = 0;
+    reminderData.sound.play();
+    reminderData.hoursPassed = 0;
+    reminderData.minutesPassed = 0;
   }
 }
 
@@ -176,6 +215,9 @@ function init()
     setAllStorage();
     return null;
   });
+
+  $("#hoursSelect").val(reminderData.reminderInterval[0]).change();
+  $("#minutesSelect").val(reminderData.reminderInterval[1]).change();
 }
 
 init();
