@@ -6,6 +6,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="icon-144x144.png">
   <title>PWA Timer</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css"
@@ -63,16 +64,6 @@
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
   <script type="text/javascript" src="app.js" async></script>
   <script>
-    $("#settingsBtn").click(function () {
-      $('#timer-container').css('display', 'none');
-      $('#settings-container').css('display', 'block');
-    });
-    $("#backBtn").click(function () {
-      $('#timer-container').css('display', 'block');
-      $('#settings-container').css('display',
-        'none');
-    });
-
     $(document).ready(function () {
       $('select').material_select();
     });

@@ -1,6 +1,6 @@
-'use strict';
+'use strict'; //Forces strict JS syntax.
 
-var storage = window.localStorage;
+var storage = window.localStorage; //Reference to the html5 localstorage.
 
 /**If the browser supports service workers, register it.*/
 function initialiseServiceWorker()
@@ -11,8 +11,15 @@ function initialiseServiceWorker()
       .register('./service-worker.js')
       .then(function () { console.log('Service Worker Registered'); });
   }
+  else
+  {
+    window.alert("Your browser doesn't support service workers, the app may not work.");
+  }
 }
 
+/*-----------------------UTIL FUNCTIONS-----------------------*/
+
+/**Makes a number fit within the 00:00:00 format by placing a 0 before a single digit number*/
 function makeTimeString(num)
 {
   num = num.toString();
@@ -24,6 +31,12 @@ function makeTimeString(num)
   return num;
 }
 
+
+/*-----------------------TIMER-----------------------*/
+
+/**The Timer object. It holds the html elements pertaining to the timer and whether the timer is enabled.
+ * It contains functionality to pause/play the timer, and to reset the timer. The actual counting of the timer
+ * itself is carried out within the background_process.js script as a web worker, communicating with the Timer object.*/
 function Timer()
 {
   /**The hours section of the timer in HTML.*/
@@ -39,9 +52,13 @@ function Timer()
   this.changeState = function (state)
   {
     this.isEnabled = state;
+
+    /*Stops or starts the web worker timer counting depending on the state of this timer object*/
     web_worker.postMessage(["state_change", this.isEnabled]);
   };
 
+  /**Flip the current timer state and update the icon in html to represent the new state and
+   * call setAllStorage() to update the local storage timer values with the current values*/
   this.pause = function ()
   {
     //If the state being changed into is false
@@ -60,13 +77,15 @@ function Timer()
     setAllStorage();
   };
 
+  /**Tell the web worker to reset it's values for the timer, and then clear the timer within the html.
+   * If the timer is still running, pause it after resetting and then update the local storage.*/
   this.reset = function ()
   {
     //Reset the timer.
     web_worker.postMessage(["reset"]);
-    this.hhHtml.innerText = makeTimeString(0);
-    this.mmHtml.innerText = makeTimeString(0);
-    this.ssHtml.innerText = makeTimeString(0);
+    this.hhHtml.innerText = "00";
+    this.mmHtml.innerText = "00";
+    this.ssHtml.innerText = "00";
 
     if (this.isEnabled)
     {
@@ -77,63 +96,37 @@ function Timer()
   };
 }
 
-let timer = new Timer();
+let timer = new Timer(); //Create an instance of the Timer object.
 
-
-function Reminder()
+//Timer UI Events
+$("#changeStateBtn").click(function ()
 {
-  this.sound = new Audio("alarm.mp3");
-
-  this.hoursPassed = 0;
-  this.minutesPassed = 0;
-
-  this.reminderInterval = [];
-
-  this.setReminderInterval = function (hours, minutes, fromStorage)
-  {
-    fromStorage = fromStorage || false;
-
-    this.reminderInterval[0] = hours;
-    this.reminderInterval[1] = minutes;
-
-    if (!fromStorage)
-    {
-      storage.setItem("interval", this.reminderInterval[0].toString() + "," + this.reminderInterval[1].toString());
-    }
-  }
-
-  if (storage.getItem("interval") === null || storage.getItem("interval") === undefined)
-  {
-    this.reminderInterval = [2, 0];
-  }
-  else
-  {
-    let locallyStoredInterval = storage.getItem("interval").split(',');
-
-    this.setReminderInterval(parseInt(locallyStoredInterval[0]), parseInt(locallyStoredInterval[1]), true);
-  }
-}
-
-let reminderData = new Reminder();
-
-$("#applyBtn").click(function ()
-{
-  reminderData.setReminderInterval($("#hoursSelect").val(), $("#minutesSelect").val());
-  $('#timer-container').css('display', 'block');
-  $('#settings-container').css('display', 'none');
+  timer.pause();
 });
 
+$("#resetBtn").click(function ()
+{
+  timer.reset();
+});
+
+/**The function that takes the new values from the counted timer on the web worker and
+ * updates the html. It also controls when a sound should be played to signal a reminder and
+ * autosaves the timer in localstorage every 10 seconds.*/
 function updateTimer(data)
 {
-  switch (data.type)
+  /*data is passed when the web worker posts a message and contains a type and a value.
+  data.type is either 'hh', 'mm' or 'ss' and the value is the corresponding updated value.*/
+  switch (data.type) 
   {
     case 'ss':
-      timer.ssHtml.innerText = makeTimeString(data.value);
+      timer.ssHtml.innerText = makeTimeString(data.value); //Set the html for seconds to the new data.value.
 
+      /*If 10 seconds has passed, update the local storage*/
       if (data.value % 10 === 0)
       {
         setAllStorage();
       }
+
       break;
     case 'mm':
       timer.mmHtml.innerText = makeTimeString(data.value);
@@ -145,6 +138,8 @@ function updateTimer(data)
       break;
   }
 
+  /*If the time passed has reached the set interval, play a reminder sound and reset the time passed
+  to be checked again*/
   if (reminderData.hoursPassed == reminderData.reminderInterval[0]
     && reminderData.minutesPassed == reminderData.reminderInterval[1])
   {
@@ -154,9 +149,104 @@ function updateTimer(data)
   }
 }
 
+/*-----------------------REMINDERS-----------------------*/
+
+/**The Reminder object contains the sound, the amount of time passed in hours and minutes, the interval
+ * at which the reminder should be triggered and then the functionality to set the reminder interval.*/
+function Reminder()
+{
+  this.sound = new Audio("alarm.mp3");
+
+  /*Amount of time passed between each reminder interval*/
+  this.hoursPassed = 0;
+  this.minutesPassed = 0;
+
+  /*Every [hours, minutes] the reminder should be triggered*/
+  this.reminderInterval = [];
+
+  /**Sets the hours and minutes of the timer, and takes an optional parameter which
+   * will be true when the reminder interval is being loaded from local storage, to avoid
+   * re-setting the local storage with the same value.*/
+  this.setReminderInterval = function (hours, minutes, fromStorage)
+  {
+    fromStorage = fromStorage || false;
+
+    this.reminderInterval[0] = hours;
+    this.reminderInterval[1] = minutes;
+
+    /*If the data isn't from local storage, set the local storage to the current reminder interval*/
+    if (!fromStorage)
+    {
+      storage.setItem("interval", this.reminderInterval[0].toString() + "," + this.reminderInterval[1].toString());
+    }
+  }
+
+  /**Gets called when the app is first loaded and the Reminder object is created.
+   * It sets the reminder interval to 2 hours if no local storage for the interval
+   * is found. If there is local storage for the interval, it will grab that data and set
+   * the current reminder interval.*/
+  if (storage.getItem("interval") === null || storage.getItem("interval") === undefined)
+  {
+    this.setReminderInterval(2, 0);
+  }
+  else
+  {
+    let locallyStoredInterval = storage.getItem("interval").split(','); //Split the local storage eg. "2,30"
+
+    this.setReminderInterval(parseInt(locallyStoredInterval[0]), parseInt(locallyStoredInterval[1]), true);
+  }
+}
+
+let reminderData = new Reminder(); //Create the instance of Reminder()
+
+
+/*-----------------------SETTINGS FUNCTIONALITY-----------------------*/
+
+/**Swaps the display style of the timer container and the settings container, assuming
+ * one of them starts as display none;*/
+function switchDisplay()
+{
+  let timerDisplay = document.getElementById("timer-container").style.display;
+  let settingsDisplay = document.getElementById("settings-container").style.display;
+  $('#timer-container').css('display', settingsDisplay);
+  $('#settings-container').css('display', timerDisplay);
+}
+
+/**When the apply button is clicked on the settings menu, set the reminderInterval to the
+ * values selected in the dropdowns and then switch back to the timer display*/
+$("#applyBtn").click(function ()
+{
+  reminderData.setReminderInterval($("#hoursSelect").val(), $("#minutesSelect").val());
+  switchDisplay();
+});
+
+/**Switch to the settings display when the settings button is clicked.*/
+$("#settingsBtn").click(function ()
+{
+  switchDisplay();
+});
+
+/**Switch to the timer display when the back button is clicked.*/
+$("#backBtn").click(function ()
+{
+  switchDisplay();
+});
+
+/**Set the selected items in the dropdown menu to be equal to the currently stored
+   * reminder interval values.*/
+$("#hoursSelect").val(reminderData.reminderInterval[0]).change();
+$("#minutesSelect").val(reminderData.reminderInterval[1]).change();
+
+
+/*-----------------------WEB WORKERS-----------------------*/
 
 
 let web_worker;
+
+/**If web workers are supported, create a new one that utilises background_process.js
+ * and store it inside of web_worker. Setup an event listener that is triggered when
+ * postMessage() is called from within background_process.js. This event listener will call updateTimer(),
+ * passing in the data received from postMessage() which should only contain a type and a value.*/
 function startBackgroundProcess()
 {
   if (typeof (Worker) !== "undefined")
@@ -172,11 +262,13 @@ function startBackgroundProcess()
   }
   else
   {
-    alert("Browser not supported..");
+    window.alert("Browser not supported..");
   }
 }
 
+/*-----------------------LOCAL STORAGE AND INITIALISATION-----------------------*/
 
+/**Sets all of the stored values from the timer to the current values in the html.*/
 function setAllStorage()
 {
   storage.setItem("hh", timer.hhHtml.innerText);
@@ -184,10 +276,10 @@ function setAllStorage()
   storage.setItem("ss", timer.ssHtml.innerText);
 }
 
-//Called when app.js is first loaded.
+/**Is called when app.js is first loaded.*/
 function init()
 {
-  startBackgroundProcess();
+  startBackgroundProcess(); //Start the web worker.
 
   //If no local storage exists for the timer.
   if (storage.getItem("ss") === null || storage.getItem("ss") === undefined)
@@ -199,10 +291,12 @@ function init()
   }
   else
   {
+    /*Make the current timer values in the html equal to the locally stored values.*/
     timer.hhHtml.innerText = storage.getItem("hh");
     timer.mmHtml.innerText = storage.getItem("mm");
     timer.ssHtml.innerText = storage.getItem("ss");
 
+    /*Tell the web worker to update it's values by the locally stored values parsed as integers.*/
     web_worker.postMessage(["update_from_storage", parseInt(timer.hhHtml.innerText),
       parseInt(timer.mmHtml.innerText), parseInt(timer.ssHtml.innerText)]);
   }
@@ -210,25 +304,12 @@ function init()
 
   initialiseServiceWorker();
 
+  /**If the user closes the page in ant shape or form, save the current timer values to local storage.*/
   window.addEventListener("beforeunload", function (e)
   {
     setAllStorage();
     return null;
   });
-
-  $("#hoursSelect").val(reminderData.reminderInterval[0]).change();
-  $("#minutesSelect").val(reminderData.reminderInterval[1]).change();
 }
 
 init();
-
-//EVENTS
-$("#changeStateBtn").click(function ()
-{
-  timer.pause();
-});
-
-$("#resetBtn").click(function ()
-{
-  timer.reset();
-});
