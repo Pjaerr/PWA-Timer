@@ -1,7 +1,6 @@
-'use strict'; //Forces strict JS syntax.
+"use strict"; //Forces strict JS syntax.
 
 var storage = window.localStorage; //Reference to the html5 localstorage.
-
 /**If the browser supports service workers, register it.*/
 function initialiseServiceWorker()
 {
@@ -17,12 +16,13 @@ function initialiseServiceWorker()
   }
 }
 
-/*-----------------------UTIL FUNCTIONS-----------------------*/
+/*-----------------------:UTIL FUNCTIONS-----------------------*/
 
 /**Makes a number fit within the 00:00:00 format by placing a 0 before a single digit number*/
 function makeTimeString(num)
 {
   num = num.toString();
+
   if (num < 10)
   {
     num = '0' + num;
@@ -32,7 +32,7 @@ function makeTimeString(num)
 }
 
 
-/*-----------------------TIMER-----------------------*/
+/*-----------------------:TIMER-----------------------*/
 
 /**The Timer object. It holds the html elements pertaining to the timer and whether the timer is enabled.
  * It contains functionality to pause/play the timer, and to reset the timer. The actual counting of the timer
@@ -46,23 +46,14 @@ function Timer()
   /**The seconds section of the timer in HTML.*/
   this.ssHtml = document.getElementById('ss');
 
-  this.isEnabled = false;
-
-
-  this.changeState = function (state)
-  {
-    this.isEnabled = state;
-
-    /*Stops or starts the web worker timer counting depending on the state of this timer object*/
-    web_worker.postMessage(["state_change", this.isEnabled]);
-  };
+  let isEnabled = false;
 
   /**Flip the current timer state and update the icon in html to represent the new state and
    * call setAllStorage() to update the local storage timer values with the current values*/
-  this.pause = function ()
+  this.changeState = function ()
   {
     //If the state being changed into is false
-    if (!this.isEnabled === false)
+    if (!isEnabled === false)
     {
       //make button a play sign.
       $("#changeStateBtn").html("<i class='material-icons'>play_arrow</i>");
@@ -73,7 +64,10 @@ function Timer()
       $("#changeStateBtn").html("<i class='material-icons'>pause</i>");
     }
 
-    this.changeState(!this.isEnabled);
+    /*Stops or starts the web worker timer counting depending on the state of this timer object*/
+    isEnabled = !isEnabled
+    web_worker.postMessage(["state_change", isEnabled]);
+
     setAllStorage();
   };
 
@@ -87,9 +81,9 @@ function Timer()
     this.mmHtml.innerText = "00";
     this.ssHtml.innerText = "00";
 
-    if (this.isEnabled)
+    if (isEnabled)
     {
-      this.pause();
+      this.changeState();
     }
 
     setAllStorage();
@@ -99,15 +93,9 @@ function Timer()
 let timer = new Timer(); //Create an instance of the Timer object.
 
 //Timer UI Events
-$("#changeStateBtn").click(function ()
-{
-  timer.pause();
-});
+$("#changeStateBtn").click(function () { timer.changeState(); });
 
-$("#resetBtn").click(function ()
-{
-  timer.reset();
-});
+$("#resetBtn").click(function () { timer.reset() });
 
 /**The function that takes the new values from the counted timer on the web worker and
  * updates the html. It also controls when a sound should be played to signal a reminder and
@@ -140,8 +128,7 @@ function updateTimer(data)
 
   /*If the time passed has reached the set interval, play a reminder sound and reset the time passed
   to be checked again*/
-  if (reminderData.hoursPassed == reminderData.reminderInterval[0]
-    && reminderData.minutesPassed == reminderData.reminderInterval[1])
+  if (reminderData.intervalHasPassed())
   {
     reminderData.sound.play();
     reminderData.hoursPassed = 0;
@@ -149,7 +136,7 @@ function updateTimer(data)
   }
 }
 
-/*-----------------------REMINDERS-----------------------*/
+/*-----------------------:REMINDERS-----------------------*/
 
 /**The Reminder object contains the sound, the amount of time passed in hours and minutes, the interval
  * at which the reminder should be triggered and then the functionality to set the reminder interval.*/
@@ -164,6 +151,8 @@ function Reminder()
   /*Every [hours, minutes] the reminder should be triggered*/
   this.reminderInterval = [];
 
+  this.isEnabled = false;
+
   /**Sets the hours and minutes of the timer, and takes an optional parameter which
    * will be true when the reminder interval is being loaded from local storage, to avoid
    * re-setting the local storage with the same value.*/
@@ -174,11 +163,22 @@ function Reminder()
     this.reminderInterval[0] = hours;
     this.reminderInterval[1] = minutes;
 
+    //If no reminder is set, disable the timer.
+    this.isEnabled = !(hours === 0 && minutes === 0);
+
     /*If the data isn't from local storage, set the local storage to the current reminder interval*/
     if (!fromStorage)
     {
       storage.setItem("interval", this.reminderInterval[0].toString() + "," + this.reminderInterval[1].toString());
     }
+  }
+
+  /**If reminders are enabled and the hours and minutes passed is the same as
+   * the set interval, return true.*/
+  this.intervalHasPassed = function ()
+  {
+    return (this.isEnabled && this.hoursPassed === this.reminderInterval[0]
+      && this.minutesPassed === this.reminderInterval[1]);
   }
 
   /**Gets called when the app is first loaded and the Reminder object is created.
@@ -187,7 +187,7 @@ function Reminder()
    * the current reminder interval.*/
   if (storage.getItem("interval") === null || storage.getItem("interval") === undefined)
   {
-    this.setReminderInterval(2, 0);
+    this.setReminderInterval(0, 0);
   }
   else
   {
@@ -195,12 +195,14 @@ function Reminder()
 
     this.setReminderInterval(parseInt(locallyStoredInterval[0]), parseInt(locallyStoredInterval[1]), true);
   }
+
+
 }
 
 let reminderData = new Reminder(); //Create the instance of Reminder()
 
 
-/*-----------------------SETTINGS FUNCTIONALITY-----------------------*/
+/*-----------------------:SETTINGS FUNCTIONALITY-----------------------*/
 
 /**Swaps the display style of the timer container and the settings container, assuming
  * one of them starts as display none;*/
@@ -216,7 +218,7 @@ function switchDisplay()
  * values selected in the dropdowns and then switch back to the timer display*/
 $("#applyBtn").click(function ()
 {
-  reminderData.setReminderInterval($("#hoursSelect").val(), $("#minutesSelect").val());
+  reminderData.setReminderInterval(parseInt($("#hoursSelect").val()), parseInt($("#minutesSelect").val()));
   switchDisplay();
 });
 
@@ -238,7 +240,7 @@ $("#hoursSelect").val(reminderData.reminderInterval[0]).change();
 $("#minutesSelect").val(reminderData.reminderInterval[1]).change();
 
 
-/*-----------------------WEB WORKERS-----------------------*/
+/*-----------------------:WEB WORKERS-----------------------*/
 
 
 let web_worker;
@@ -266,7 +268,7 @@ function startBackgroundProcess()
   }
 }
 
-/*-----------------------LOCAL STORAGE AND INITIALISATION-----------------------*/
+/*-----------------------:LOCAL STORAGE AND INITIALISATION-----------------------*/
 
 /**Sets all of the stored values from the timer to the current values in the html.*/
 function setAllStorage()
@@ -304,7 +306,7 @@ function init()
 
   initialiseServiceWorker();
 
-  /**If the user closes the page in ant shape or form, save the current timer values to local storage.*/
+  /**If the user closes the page in any shape or form, save the current timer values to local storage.*/
   window.addEventListener("beforeunload", function (e)
   {
     setAllStorage();
