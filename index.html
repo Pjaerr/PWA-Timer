@@ -27,9 +27,15 @@
       </div>
 
       <div class="controls">
-        <a id="changeStateBtn" class="btn-floating btn-large waves-effect waves-light pink accent-2"><i class="material-icons">play_arrow</i></a>
-        <a id="settingsBtn" class="btn-floating btn-small waves-effect waves-light pink accent-2" style="margin-top: 12px"><i class="material-icons">settings</i></a>
-        <a id="resetBtn" class="btn-floating btn-large waves-effect waves-light pink accent-2"><i class="material-icons">replay</i></a>
+        <a id="changeStateBtn" class="btn-floating btn-large waves-effect waves-light pink accent-2">
+          <i class="material-icons">play_arrow</i>
+        </a>
+        <a id="settingsBtn" class="btn-floating btn-small waves-effect waves-light pink accent-2" style="margin-top: 12px">
+          <i class="material-icons">settings</i>
+        </a>
+        <a id="resetBtn" class="btn-floating btn-large waves-effect waves-light pink accent-2">
+          <i class="material-icons">replay</i>
+        </a>
       </div>
     </div>
 
@@ -53,7 +59,9 @@
             </div>
 
             <div class="col s12" style="margin-top: 40px">
-              <a id="backBtn" class="waves-effect waves-light btn pink accent-2" style="margin-bottom: 5px;"><i class="large material-icons">arrow_back</i></a>
+              <a id="backBtn" class="waves-effect waves-light btn pink accent-2" style="margin-bottom: 5px;">
+                <i class="large material-icons">arrow_back</i>
+              </a>
               <a id="applyBtn" class="waves-effect waves-light btn pink accent-2" style="margin-bottom: 5px;">Apply</a>
             </div>
           </div>
@@ -62,11 +70,18 @@
 
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-  <script type="text/javascript" src="app.js" async></script>
+  <script type="text/javascript" src="app-v1.1.js" async></script>
   <script>
     /*Setup the reminder interval dropdown select menus*/
     $(document).ready(function () {
       $('select').material_select();
+
+      if (!Notification) {
+        canUseNotifications = false;
+      } else {
+        Notification.requestPermission();
+      }
+
     });
 
     let hours = document.getElementById("hoursSelect");

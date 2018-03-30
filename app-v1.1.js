@@ -1,5 +1,8 @@
 "use strict"; //Forces strict JS syntax.
 
+let canUseNotifications = true;
+
+
 var storage = window.localStorage; //Reference to the html5 localstorage.
 /**If the browser supports service workers, register it.*/
 function initialiseServiceWorker()
@@ -133,6 +136,27 @@ function updateTimer(data)
     reminderData.sound.play();
     reminderData.hoursPassed = 0;
     reminderData.minutesPassed = 0;
+
+    if (canUseNotifications)
+    {
+      if (Notification.permission !== "granted")
+      {
+        Notification.requestPermission();
+      }
+      else
+      {
+        let notification = new Notification("Times up!",
+          {
+            icon: "icon-144x144.png",
+            silent: true
+          });
+
+        notification.onclick = function ()
+        {
+          notification.close();
+        }
+      }
+    }
   }
 }
 

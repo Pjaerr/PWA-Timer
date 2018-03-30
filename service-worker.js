@@ -1,4 +1,4 @@
-var cacheName = 'timerPWA-0'; //The name of the cache, named so that different caches can be updated without breaking other caches.
+var cacheName = 'timerPWA-1'; //The name of the cache, named so that different caches can be updated without breaking other caches.
 
 /**All of the files that will be cached and loaded from cache when possible.*/
 var filesToCache = [
