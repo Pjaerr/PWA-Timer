@@ -75,6 +75,13 @@
     /*Setup the reminder interval dropdown select menus*/
     $(document).ready(function () {
       $('select').material_select();
+
+      if (!Notification) {
+        canUseNotifications = false;
+      } else {
+        Notification.requestPermission();
+      }
+
     });
 
     let hours = document.getElementById("hoursSelect");
